@@ -170,12 +170,14 @@ def make_predictions(
     system_id, file_root = get_cache_id_and_path(output_dir, parameters)
     if os.path.exists(f"{file_root}.json"):
         with open(f"{file_root}.json", "r") as f:
+            print(f"cache with parameters {parameters} exists")
             return system_id, json.load(f)
 
     with CacheLock(file_root) as cache_lock:
         # If the cache is locked, then another process is already generating
         # so just skip this one
         if not cache_lock:
+            print(f"cache locked, failed")
             return None
         # Make predictions
         try:

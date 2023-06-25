@@ -32,29 +32,29 @@ from zeno_build.prompts.chat_prompt import ChatMessages, ChatTurn
 
 # Define the space of hyperparameters to search over if using
 # hyperparameter search.
-full_space = search_space.CombinatorialSearchSpace(
-    {
-        "dataset_preset": search_space.Constant("dstc11"),
-        "model_preset": search_space.Categorical(
-            [
-                # "gpt-3.5-turbo",
-                # "cohere-command-xlarge",
-                "gpt2",
-                "gpt2-xl",
-                "llama-7b",
-                "vicuna-7b",
-                "mpt-7b-chat",
-            ]
-        ),
-        "prompt_preset": search_space.Categorical(
-            ["standard", "friendly", "polite", "cynical"]
-        ),
-        "temperature": search_space.Discrete([0.2, 0.3, 0.4]),
-        "context_length": search_space.Discrete([1, 2, 3, 4]),
-        "max_tokens": search_space.Constant(100),
-        "top_p": search_space.Constant(1.0),
-    }
-)
+# full_space = search_space.CombinatorialSearchSpace(
+#     {
+#         "dataset_preset": search_space.Constant("dstc11"),
+#         "model_preset": search_space.Categorical(
+#             [
+#                 # "gpt-3.5-turbo",
+#                 # "cohere-command-xlarge",
+#                 "gpt2",
+#                 "gpt2-xl",
+#                 "llama-7b",
+#                 "vicuna-7b",
+#                 "mpt-7b-chat",
+#             ]
+#         ),
+#         "prompt_preset": search_space.Categorical(
+#             ["standard", "friendly", "polite", "cynical"]
+#         ),
+#         "temperature": search_space.Discrete([0.2, 0.3, 0.4]),
+#         "context_length": search_space.Discrete([1, 2, 3, 4]),
+#         "max_tokens": search_space.Constant(100),
+#         "top_p": search_space.Constant(1.0),
+#     }
+# )
 
 # Specifically, this is the space of hyperparameters used in the Zeno
 # chatbot report on the DSTC11 dataset:
@@ -75,13 +75,14 @@ report_space = search_space.CompositeSearchSpace(
                         # "llama-7b",
                         # "vicuna-7b",
                         # "mpt-7b-chat",
+                        # "vicuna-v1-7b-q3f16_0",
                     ]
                 ),
-                "prompt_preset": search_space.Constant("standard"),
-                "temperature": search_space.Constant(0.3),
-                "context_length": search_space.Constant(4),
-                "max_tokens": search_space.Constant(100),
-                "top_p": search_space.Constant(1.0),
+                "prompt_preset": search_space.Constant("friendly"),
+                "temperature": search_space.Constant(0.7),
+                "context_length": search_space.Constant(2),
+                "max_tokens": search_space.Constant(512),
+                "top_p": search_space.Constant(0.95),
             }
         ),
         # # Comparison of prompts
@@ -175,6 +176,15 @@ model_configs = {
         provider="huggingface",
         model="mosaicml/mpt-7b-chat",
         model_loader_kwargs={"trust_remote_code": True},
+    ),
+    "vicuna-v1-7b-q3f16_0": LMConfig(  # MLC-LLM
+        provider="mlc-llm",
+        model="vicuna-v1-7b-q3f16_0",
+        name_replacements={
+            "system": "ASSISTANT",
+            "assistant": "ASSISTANT",
+            "user": "USER",
+        },
     ),
 }
 

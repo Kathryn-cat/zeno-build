@@ -19,6 +19,16 @@ from zeno_build.prompts.chat_prompt import ChatMessages
 from zeno_build.reporting import reporting_utils
 from zeno_build.reporting.visualize import visualize
 
+from zeno_build.evaluation.text_features.exact_match import avg_exact_match, exact_match
+from zeno_build.evaluation.text_metrics.critique import (
+    avg_bert_score,
+    avg_chrf,
+    avg_length_ratio,
+    bert_score,
+    chrf,
+    length_ratio,
+)
+
 
 def chatbot_main(
     results_dir: str,
@@ -60,89 +70,98 @@ def chatbot_main(
         contexts = contexts[:30]
 
     if do_prediction:
-        # Perform the hyperparameter sweep
-        optimizer = exhaustive.ExhaustiveOptimizer(
-            space=chatbot_config.report_space,
-            distill_functions=chatbot_config.sweep_distill_functions,
-            metric=chatbot_config.sweep_metric_function,
-            num_trials=chatbot_config.num_trials,
-        )
+        for distill_function, metric in [
+            ([chrf], avg_chrf),
+            ([length_ratio], avg_length_ratio),
+            ([bert_score], avg_bert_score),
+            ([exact_match], avg_exact_match),
+        ]:
+            # Perform the hyperparameter sweep
+            optimizer = exhaustive.ExhaustiveOptimizer(
+                space=chatbot_config.report_space,
+                distill_functions=distill_function,
+                metric=metric,
+                num_trials=chatbot_config.num_trials,
+            )
 
-        while not optimizer.is_complete(predictions_dir, include_in_progress=True):
-            # Get parameters
-            parameters = optimizer.get_parameters()
-            if parameters is None:
-                break
-            # Get the run ID and resulting predictions
-            id_and_predictions = make_predictions(
-                contexts=contexts,
-                dataset_preset=parameters["dataset_preset"],
-                prompt_preset=parameters["prompt_preset"],
-                model_preset=parameters["model_preset"],
-                temperature=parameters["temperature"],
-                max_tokens=parameters["max_tokens"],
-                top_p=parameters["top_p"],
-                context_length=parameters["context_length"],
-                output_dir=predictions_dir,
-            )
-            if id_and_predictions is None:
-                print(f"*** Skipped run for {parameters=} ***")
-                continue
-            # Run or read the evaluation result
-            id, predictions = id_and_predictions
-            if os.path.exists(f"{predictions_dir}/{id}.eval"):
-                with open(f"{predictions_dir}/{id}.eval", "r") as f:
-                    eval_result = float(next(f).strip())
-            else:
-                eval_result = optimizer.calculate_metric(contexts, labels, predictions)
-                with open(f"{predictions_dir}/{id}.eval", "w") as f:
-                    f.write(f"{eval_result}")
-            # Print out the results
-            print("*** Iteration complete. ***")
-            print(f"Eval: {eval_result}, Parameters: {parameters}")
-            print("***************************")
-
-    if do_visualization:
-        print(f"begin visualization")
-        param_files = chatbot_config.report_space.get_valid_param_files(
-            predictions_dir, include_in_progress=False
-        )
-        if len(param_files) < chatbot_config.num_trials:
-            logging.getLogger().warning(
-                "Not enough completed but performing visualization anyway."
-            )
-        results: list[ExperimentRun] = []
-        for param_file in param_files:
-            assert param_file.endswith(".zbp")
-            with open(param_file, "r") as f:
-                loaded_parameters = json.load(f)
-            with open(f"{param_file[:-4]}.json", "r") as f:
-                predictions = json.load(f)
-            name = reporting_utils.parameters_to_name(
-                loaded_parameters, chatbot_config.report_space
-            )
-            results.append(
-                ExperimentRun(
-                    parameters=loaded_parameters, predictions=predictions, name=name
+            while not optimizer.is_complete(predictions_dir, include_in_progress=True):
+                # Get parameters
+                parameters = optimizer.get_parameters()
+                print(f"get parameters: {parameters}")
+                if parameters is None:
+                    break
+                # Get the run ID and resulting predictions
+                id_and_predictions = make_predictions(
+                    contexts=contexts,
+                    dataset_preset=parameters["dataset_preset"],
+                    prompt_preset=parameters["prompt_preset"],
+                    model_preset=parameters["model_preset"],
+                    temperature=parameters["temperature"],
+                    max_tokens=parameters["max_tokens"],
+                    top_p=parameters["top_p"],
+                    context_length=parameters["context_length"],
+                    output_dir=predictions_dir,
                 )
-            )
+                if id_and_predictions is None:
+                    print(f"*** Skipped run for {parameters=} ***")
+                    continue
+                # Run or read the evaluation result
+                _, predictions = id_and_predictions
+                # if os.path.exists(f"{predictions_dir}/{id}.eval"):
+                #     with open(f"{predictions_dir}/{id}.eval", "r") as f:
+                #         eval_result = float(next(f).strip())
+                # else:
+                eval_result = optimizer.calculate_metric(contexts, labels, predictions)
+                # with open(f"{predictions_dir}/{id}.eval", "w") as f:
+                #     f.write(f"{eval_result}")
+                # Print out the results
+                print("*** Iteration complete. ***")
+                print(
+                    f"Distill function: {distill_function}, Metric: {metric}, Eval: {eval_result}, Parameters: {parameters}"
+                )
+                print("***************************")
 
-        # Perform the visualization
-        df = pd.DataFrame(
-            {
-                "messages": [[asdict(y) for y in x.messages] for x in contexts],
-                "label": labels,
-            }
-        )
-        visualize(
-            df,
-            labels,
-            results,
-            "openai-chat",
-            "messages",
-            chatbot_config.zeno_distill_and_metric_functions,
-            zeno_config={"cache_path": os.path.join(results_dir, "zeno_cache")},
-        )
+    # if do_visualization:
+    #     print(f"begin visualization")
+    #     param_files = chatbot_config.report_space.get_valid_param_files(
+    #         predictions_dir, include_in_progress=False
+    #     )
+    #     if len(param_files) < chatbot_config.num_trials:
+    #         logging.getLogger().warning(
+    #             "Not enough completed but performing visualization anyway."
+    #         )
+    #     results: list[ExperimentRun] = []
+    #     for param_file in param_files:
+    #         assert param_file.endswith(".zbp")
+    #         with open(param_file, "r") as f:
+    #             loaded_parameters = json.load(f)
+    #         with open(f"{param_file[:-4]}.json", "r") as f:
+    #             predictions = json.load(f)
+    #         name = reporting_utils.parameters_to_name(
+    #             loaded_parameters, chatbot_config.report_space
+    #         )
+    #         results.append(
+    #             ExperimentRun(
+    #                 parameters=loaded_parameters, predictions=predictions, name=name
+    #             )
+    #         )
+
+    #     # Perform the visualization
+    #     df = pd.DataFrame(
+    #         {
+    #             "messages": [[asdict(y) for y in x.messages] for x in contexts],
+    #             "label": labels,
+    #         }
+    #     )
+    #     visualize(
+    #         df,
+    #         labels,
+    #         results,
+    #         "openai-chat",
+    #         "messages",
+    #         chatbot_config.zeno_distill_and_metric_functions,
+    #         zeno_config={"cache_path": os.path.join(results_dir, "zeno_cache")},
+    #     )
 
 
 if __name__ == "__main__":
