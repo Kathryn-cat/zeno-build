@@ -58,6 +58,8 @@ def visualize(
         label_column="label",
         batch_size=100000,
         multiprocessing=False,
+        host="127.0.0.1",
+        port=9999,
     )
     config = config.copy(update=zeno_config)
 

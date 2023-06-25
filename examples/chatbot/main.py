@@ -24,6 +24,7 @@ def chatbot_main(
     results_dir: str,
     do_prediction: bool = True,
     do_visualization: bool = True,
+    short: bool = False,
 ):
     """Run the chatbot experiment."""
     # Get the dataset configuration
@@ -53,6 +54,10 @@ def chatbot_main(
     for x in contexts_and_labels:
         labels.append(x.messages[-1].content)
         contexts.append(ChatMessages(x.messages[:-1]))
+
+    if short:
+        labels = labels[:30]
+        contexts = contexts[:30]
 
     if do_prediction:
         # Perform the hyperparameter sweep
@@ -98,6 +103,7 @@ def chatbot_main(
             print("***************************")
 
     if do_visualization:
+        print(f"begin visualization")
         param_files = chatbot_config.report_space.get_valid_param_files(
             predictions_dir, include_in_progress=False
         )
@@ -158,6 +164,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Skip visualization and just do prediction.",
     )
+    parser.add_argument("--short", action="store_true", help="Run a short version.")
     args = parser.parse_args()
 
     if args.skip_prediction and args.skip_visualization:
@@ -169,4 +176,5 @@ if __name__ == "__main__":
         results_dir=args.results_dir,
         do_prediction=not args.skip_prediction,
         do_visualization=not args.skip_visualization,
+        short=args.short,
     )
