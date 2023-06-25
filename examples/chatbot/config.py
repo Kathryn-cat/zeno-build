@@ -69,12 +69,12 @@ report_space = search_space.CompositeSearchSpace(
                 "dataset_preset": search_space.Constant("dstc11"),
                 "model_preset": search_space.Categorical(
                     [
-                        "gpt-3.5-turbo",
+                        # "gpt-3.5-turbo",
                         "gpt2",
-                        "gpt2-xl",
-                        "llama-7b",
-                        "vicuna-7b",
-                        "mpt-7b-chat",
+                        # "gpt2-xl",
+                        # "llama-7b",
+                        # "vicuna-7b",
+                        # "mpt-7b-chat",
                     ]
                 ),
                 "prompt_preset": search_space.Constant("standard"),
@@ -84,32 +84,32 @@ report_space = search_space.CompositeSearchSpace(
                 "top_p": search_space.Constant(1.0),
             }
         ),
-        # Comparison of prompts
-        search_space.CombinatorialSearchSpace(
-            {
-                "dataset_preset": search_space.Constant("dstc11"),
-                "model_preset": search_space.Constant("vicuna-7b"),
-                "prompt_preset": search_space.Categorical(
-                    ["standard", "friendly", "polite", "cynical", "insurance_standard"]
-                ),
-                "temperature": search_space.Constant(0.3),
-                "context_length": search_space.Constant(4),
-                "max_tokens": search_space.Constant(100),
-                "top_p": search_space.Constant(1.0),
-            }
-        ),
-        # Comparison of context lengths
-        search_space.CombinatorialSearchSpace(
-            {
-                "dataset_preset": search_space.Constant("dstc11"),
-                "model_preset": search_space.Constant("vicuna-7b"),
-                "prompt_preset": search_space.Constant("standard"),
-                "temperature": search_space.Constant(0.3),
-                "context_length": search_space.Discrete([1, 2, 3, 4]),
-                "max_tokens": search_space.Constant(100),
-                "top_p": search_space.Constant(1.0),
-            }
-        ),
+        # # Comparison of prompts
+        # search_space.CombinatorialSearchSpace(
+        #     {
+        #         "dataset_preset": search_space.Constant("dstc11"),
+        #         "model_preset": search_space.Constant("vicuna-7b"),
+        #         "prompt_preset": search_space.Categorical(
+        #             ["standard", "friendly", "polite", "cynical", "insurance_standard"]
+        #         ),
+        #         "temperature": search_space.Constant(0.3),
+        #         "context_length": search_space.Constant(4),
+        #         "max_tokens": search_space.Constant(100),
+        #         "top_p": search_space.Constant(1.0),
+        #     }
+        # ),
+        # # Comparison of context lengths
+        # search_space.CombinatorialSearchSpace(
+        #     {
+        #         "dataset_preset": search_space.Constant("dstc11"),
+        #         "model_preset": search_space.Constant("vicuna-7b"),
+        #         "prompt_preset": search_space.Constant("standard"),
+        #         "temperature": search_space.Constant(0.3),
+        #         "context_length": search_space.Discrete([1, 2, 3, 4]),
+        #         "max_tokens": search_space.Constant(100),
+        #         "top_p": search_space.Constant(1.0),
+        #     }
+        # ),
     ]
 )
 
