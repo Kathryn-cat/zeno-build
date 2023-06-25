@@ -195,6 +195,7 @@ def make_predictions(
 
         # Dump the predictions
         with open(f"{file_root}.json", "w") as f:
+            print(f"dump predictions to file: {file_root}.json")
             json.dump(predictions, f)
 
     return system_id, predictions
