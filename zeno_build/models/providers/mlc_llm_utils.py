@@ -94,17 +94,11 @@ def generate_from_mlc_llm(
 
         chat_mod.prefill(user_input)
         res = get_output()
-        print(f"user input: {user_input}, llm response: {res}")
+        results.append(res)
 
     import pdb
 
     pdb.set_trace()
 
-    # for i in tqdm.trange(0, len(filled_prompts), batch_size):
-    #     outputs = outputs[:, encoded_prompts["input_ids"].shape[-1] :]
-    #     results.extend(tokenizer.batch_decode(outputs, skip_special_tokens=True))
-    # # Post-processing to get only the system utterance
-    # results = [re.split("\n\n", x)[0].strip() for x in results]
-    # return results
-
     print(f"finish generate_from_mlc_llm")
+    return results

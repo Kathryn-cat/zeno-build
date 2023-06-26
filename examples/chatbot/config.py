@@ -80,7 +80,7 @@ report_space = search_space.CompositeSearchSpace(
                 ),
                 "prompt_preset": search_space.Constant("vicuna"),
                 "temperature": search_space.Constant(0.7),
-                "context_length": search_space.Constant(2),
+                "context_length": search_space.Constant(1),
                 "max_tokens": search_space.Constant(512),
                 "top_p": search_space.Constant(0.95),
             }
