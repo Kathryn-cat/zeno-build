@@ -75,7 +75,8 @@ report_space = search_space.CompositeSearchSpace(
                         # "llama-7b",
                         # "vicuna-7b",
                         # "mpt-7b-chat",
-                        "vicuna-v1-7b-q3f16_0",
+                        # "vicuna-v1-7b-q3f16_0",
+                        "vicuna-v1-7b-q0f16",
                     ]
                 ),
                 "prompt_preset": search_space.Constant("vicuna"),
@@ -180,6 +181,15 @@ model_configs = {
     "vicuna-v1-7b-q3f16_0": LMConfig(  # MLC-LLM
         provider="mlc-llm",
         model="vicuna-v1-7b-q3f16_0",
+        name_replacements={
+            "system": "ASSISTANT",
+            "assistant": "ASSISTANT",
+            "user": "USER",
+        },
+    ),
+    "vicuna-v1-7b-q0f16": LMConfig(  # MLC-LLM
+        provider="mlc-llm",
+        model="vicuna-v1-7b-q0f16",
         name_replacements={
             "system": "ASSISTANT",
             "assistant": "ASSISTANT",
