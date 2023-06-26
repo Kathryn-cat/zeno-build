@@ -70,15 +70,15 @@ report_space = search_space.CompositeSearchSpace(
                 "model_preset": search_space.Categorical(
                     [
                         # "gpt-3.5-turbo",
-                        "gpt2",
+                        # "gpt2",
                         # "gpt2-xl",
                         # "llama-7b",
                         # "vicuna-7b",
                         # "mpt-7b-chat",
-                        # "vicuna-v1-7b-q3f16_0",
+                        "vicuna-v1-7b-q3f16_0",
                     ]
                 ),
-                "prompt_preset": search_space.Constant("friendly"),
+                "prompt_preset": search_space.Constant("vicuna"),
                 "temperature": search_space.Constant(0.7),
                 "context_length": search_space.Constant(2),
                 "max_tokens": search_space.Constant(512),
@@ -206,6 +206,14 @@ prompt_messages: dict[str, ChatMessages] = {
                 content="You are a kind and friendly chatbot tasked with making "
                 "small-talk with people in a way that makes them feel "
                 "pleasant.",
+            ),
+        ]
+    ),
+    "vicuna": ChatMessages(
+        messages=[
+            ChatTurn(
+                role="system",
+                content="A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.",
             ),
         ]
     ),
