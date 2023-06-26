@@ -96,9 +96,5 @@ def generate_from_mlc_llm(
         res = get_output()
         results.append(res)
 
-    import pdb
-
-    pdb.set_trace()
-
     print(f"finish generate_from_mlc_llm")
     return results
