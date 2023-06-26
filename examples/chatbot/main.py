@@ -69,6 +69,10 @@ def chatbot_main(
         labels = labels[:30]
         contexts = contexts[:30]
 
+    else:
+        labels = labels[:1500]
+        contexts = contexts[:1500]
+
     if do_prediction:
         for distill_function, metric in [
             ([chrf], avg_chrf),
